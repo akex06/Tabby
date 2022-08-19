@@ -27,9 +27,22 @@ class Tabby:
         c.execute("SELECT wallet, bank FROM economy WHERE id = %s AND guild = %s", (member.id, member.guild.id))
         return c.fetchone()
 
-    async def add_money(self, member: discord.Member, amount: tuple[int]) -> tuple:
+    async def add_money(self, member: discord.Member, amount: tuple) -> tuple:
         c.execute(
-            "UPDATE economy SET wallet = wallet + %s AND bank = bank + %s WHERE id = %s AND guild = %s",
-            (amount[0], amount[1], member.id, member.guild.id))
+            "UPDATE economy SET wallet = wallet + %s, bank = bank + %s WHERE id = %s AND guild = %s",
+            (amount[0], amount[1], member.id, member.guild.id)
+        )
         conn.commit()
+        
         return await self.get_bal(member)
+
+    async def isadmin(self, interaction: discord.Interaction):
+        permission = interaction.user.guild_permissions.administrator
+
+        if permission:
+            return permission
+
+        await interaction.response.send_message(
+            "You don't have permissions for using this command",
+            ephemeral = True
+        )

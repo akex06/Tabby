@@ -3,7 +3,6 @@ import discord
 from discord import app_commands, ui
 from discord.ext import commands
 from src.tabby import Tabby
-from datetime import datetime
 
 tabby = Tabby()
 
@@ -38,38 +37,99 @@ class Economy(commands.Cog):
         name = "deposit",
         description = "Deposit money into your bank"
     )
+    @commands.guild_only()
     async def deposit(
         self,
         interaction: discord.Interaction,
         amount: int = None
     ) -> None:
-        if not amount:
+        if not amount or amount <= 0:
             await interaction.response.send_message(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
             )
             return
 
-        if amount <= 0:
+        balance = await tabby.get_bal(interaction.user)
+        if amount > int(balance[0]):
             await interaction.response.send_message(
+                "The amount to deposit can't be bigger than your wallet balance",
+                ephemeral = True
+            )
+            return
+
+        balance = await tabby.add_money(interaction.user, (amount, -amount))
+
+        await interaction.response.send_message("")
+
+    @app_commands.command(
+        name = "withdraw",
+        description = "Withdraw money from your bank"
+    )
+    @commands.guild_only()
+    async def withdraw(
+        self,
+        interaction: discord.Interaction,
+        amount: int = None
+    ) -> None:
+        if not amount or amount <= 0:
+            interaction.response.send_message(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
             )
             return
-
-        balance = wallet, bank = await tabby.get_bal(interaction.user)
-        if amount > wallet:
+        
+        bank = tabby.get_bal(interaction.user)[1]
+        if amount > bank:
             await interaction.response.send_message(
-                "The amount to deposit can't be bigger than the one you have in your wallet",
-                ephemeral = True
+                "The amount to withdraw can't be bigger than your bank balance"
             )
             return
 
-        await tabby.add_money(interaction.user, (amount, 0))
+    @app_commands.command(
+        name = "addmoney",
+        description = "Add money to a member"
+    )
+    async def addmoney(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member = None,
+        action: str = None,
+        amount: int = None
+    ) -> None:
+        if await tabby.isadmin(interaction):
+            if not amount or amount <= 0:
+                await interaction.response.send_message(
+                    "The amount needs to be greater or equal to 0",
+                    ephemeral = True
+                )
+                return
+            if not action or action.lower() not in ("add", "remove"):
+                await interaction.response.send_message(
+                    "You need to specify an action (add / remove).",
+                    ephemeral = True
+                )
+                return
 
-        embed = discord.Embed()
+            if not member:
+                member = interaction.user
 
+            if action == "add":
+                
+                await tabby.add_money(member, (amount, 0))
+                
+                await interaction.response.send_message(
+                    f"You've added `{amount}` to {member}'s balance",
+                    ephemeral = True
+                )
+            
+            else:
+                await tabby.add_money(member, (-amount, 0))
 
+                await interaction.response.send_message(
+                    f"You've removed `{amount}` from {member}'s balance",
+                    ephemeral = True
+                )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))
