@@ -116,7 +116,7 @@ class Economy(commands.Cog):
 
             if action == "add":
                 
-                await tabby.add_money(member, (amount, 0))
+                await tabby.add_money(member, (0, amount))
                 
                 await interaction.response.send_message(
                     f"You've added `{amount}` to {member}'s balance",
@@ -124,12 +124,91 @@ class Economy(commands.Cog):
                 )
             
             else:
-                await tabby.add_money(member, (-amount, 0))
+                await tabby.add_money(member, (0, -amount))
 
                 await interaction.response.send_message(
                     f"You've removed `{amount}` from {member}'s balance",
                     ephemeral = True
                 )
+
+    @app_commands.command(
+        name = "addmoneyrole",
+        description = "Add money to all members in a role"
+    )
+    async def addmoneyrole(
+        self,
+        interaction: discord.Interaction,
+        role: discord.Role = None,
+        amount: int = None
+    ) -> None:
+        if await tabby.isadmin(interaction):
+            if amount <= 0:
+                await interaction.response.send_message(
+                    "The amount to give needs to be equal or greater than 1",
+                    ephemeral = True
+                )
+                return
+
+            if not role:
+                await interaction.response.send_message(
+                    "You need to specify a role",
+                    ephemeral = True
+                )
+                return
+            
+            if not amount:
+                await interaction.response.send_message(
+                    "You need to specify an amount to give",
+                    ephemeral = True
+                )
+                return
+
+            for member in role.members:
+                await tabby.add_money(member, (0, amount))
+
+            await interaction.response.send_message(
+                f"Total amount given {len(role.members) * amount}",
+                ephemeral = True
+            )
+            
+    @app_commands.command(
+        name = "removemoneyrole",
+        description = "Remove money from all members in a role"
+    )
+    async def removemoneyrole(
+        self,
+        interaction: discord.Interaction,
+        role: discord.Role = None,
+        amount: int = None
+    ) -> None:
+        if await tabby.isadmin(interaction):
+            if amount <= 0:
+                await interaction.response.send_message(
+                    "The amount to give needs to be equal or greater than 1",
+                    ephemeral = True
+                )
+                return
+            if not role:
+                await interaction.response.send_message(
+                    "You need to specify a role",
+                    ephemeral = True
+                )
+                return
+            
+            if not amount:
+                await interaction.response.send_message(
+                    "You need to specify an amount to give",
+                    ephemeral = True
+                )
+                return
+
+            for member in role.members:
+                await tabby.add_money(member, (0, -amount))
+
+            await interaction.response.send_message(
+                f"Total amount removed {len(role.members) * amount}",
+                ephemeral = True
+            )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))

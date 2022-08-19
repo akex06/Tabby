@@ -28,6 +28,7 @@ class Tabby:
         return c.fetchone()
 
     async def add_money(self, member: discord.Member, amount: tuple) -> tuple:
+        await self.check_bal(member)
         c.execute(
             "UPDATE economy SET wallet = wallet + %s, bank = bank + %s WHERE id = %s AND guild = %s",
             (amount[0], amount[1], member.id, member.guild.id)
