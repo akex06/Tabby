@@ -243,7 +243,7 @@ class Economy(commands.Cog):
         if tabby.isadmin(interaction.user):
             view = Reset()
 
-            embed = discord.Embed(title = "Economy reset", description = "Are you sure you want to reset the economy?", color = tabby.hexcolor)
+            embed = discord.Embed(description = "Are you sure you want to reset the economy?", color = tabby.hexcolor)
             embed.set_author(name = "Economy reset", icon_url = self.bot.user.avatar.url)
             
             await interaction.response.send_message(
