@@ -1,8 +1,8 @@
-from tkinter import E
 import discord
 import mysql.connector
+import random
 
-from discord.ext import commands
+from random import randint
 from mysql.connector.connection import MySQLConnection
 
 from src.constants import (
@@ -18,8 +18,6 @@ conn: MySQLConnection = mysql.connector.connect(
 c = conn.cursor(buffered=True)
 
 class Tabby:
-    hexcolor = 0xffe100
-
     async def check_bal(self, member: discord.Member) -> None:
         c.execute("SELECT id FROM economy WHERE id = %s", (member.id, ))
         if not c.fetchone():
@@ -74,3 +72,32 @@ class Tabby:
         result = c.fetchall()
 
         return result
+
+    async def get_level(self, member: discord.Member):
+        c.execute("SELECT level, exp FROM levels WHERE id = %s AND guild = %s", (member.id, member.guild.id))
+        result = c.fetchone()
+
+        if not result:
+            c.execute("INSERT INTO levels (id, guild, level, exp) VALUES (%s, %s, 0, 0)", (member.id, member.guild.id))
+            conn.commit()
+
+            return (0, 0)
+
+        return result
+
+    #   IF MEMBER LEVEL UPS RETURS TRUE ELSE FALSE
+    async def add_exp(self, member: discord.Member) -> bool:
+        level, exp = tuple(map(int, await self.get_level(member)))
+        exp += random.randint(15, 25)
+
+        needed_exp = 5 * (level ** 2) + (50 * level) + 100 - exp
+        if needed_exp <= 0:
+            exp = abs(needed_exp)
+            c.execute("UPDATE levels SET level = level + 1, exp = %s WHERE id = %s AND guild = %s", (exp, member.id, member.guild.id))
+            conn.commit()
+            return True
+
+        c.execute("UPDATE levels SET exp = %s WHERE id = %s AND guild = %s", (exp, member.id, member.guild.id))
+        conn.commit()
+
+        return False

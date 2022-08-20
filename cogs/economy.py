@@ -1,11 +1,11 @@
 import discord
 
-from discord import app_commands
 from discord.ext import commands
 from src.tabby import Tabby
 
 from src.constants import (
-    MAX_ICON_LENGTH
+    MAX_ICON_LENGTH,
+    HEXCOLOR
 )
 
 tabby = Tabby()
@@ -59,7 +59,7 @@ class Economy(commands.Cog):
 
         wallet, bank = await tabby.get_bal(member)
 
-        embed = discord.Embed(description = f"{member.name} is top x in economy leaderboard", color = tabby.hexcolor)
+        embed = discord.Embed(description = f"{member.name} is top x in economy leaderboard", color = HEXCOLOR)
         embed.set_author(name = member.name, icon_url = member.avatar.url)
         embed.set_thumbnail(url = member.avatar.url)
         embed.add_field(name = "Wallet", value = wallet)
@@ -292,7 +292,7 @@ class Economy(commands.Cog):
     ) -> None:
         view = Reset()
 
-        embed = discord .Embed(description = "Are you sure you want to reset the economy?", color = tabby.hexcolor)
+        embed = discord .Embed(description = "Are you sure you want to reset the economy?", color = HEXCOLOR)
         embed.set_author(name = "Economy reset", icon_url = self.bot.user.avatar.url)
         
         await ctx.reply(
@@ -417,7 +417,7 @@ class Economy(commands.Cog):
     ) -> None:
         leaderboard = await tabby.get_leaderboard(ctx.guild)
 
-        embed = discord.Embed(description = f"Top 10 economy leaderboard in the server, check the whole leaderboard [here](https://tabbybot.xyz/leaderboard/economy/{ctx.guild.id}))", color = tabby.hexcolor)
+        embed = discord.Embed(description = f"Top 10 economy leaderboard in the server, check the whole leaderboard [here](https://tabbybot.xyz/leaderboard/economy/{ctx.guild.id}))", color = HEXCOLOR)
         embed.set_author(name = f"{ctx.guild.name} economy leaderboard", icon_url = ctx.guild.icon.url)
         
         for i in leaderboard:
