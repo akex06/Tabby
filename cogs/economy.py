@@ -405,5 +405,31 @@ class Economy(commands.Cog):
         await tabby.set_icon(ctx.guild, icon)
         await ctx.reply(f"The new currency icon is `{icon}`")
 
+    @commands.hybrid_command(
+        name = "leaderboard",
+        description = "Check the economy leaderboard",
+        with_app_command = True
+    )
+    @commands.guild_only()
+    async def leaderboard(
+        self,
+        ctx: commands.Context
+    ) -> None:
+        leaderboard = await tabby.get_leaderboard(ctx.guild)
+
+        embed = discord.Embed(description = f"Top 10 economy leaderboard in the server, check the whole leaderboard [here](https://tabbybot.xyz/leaderboard/economy/{ctx.guild.id}))", color = tabby.hexcolor)
+        embed.set_author(name = f"{ctx.guild.name} economy leaderboard", icon_url = ctx.guild.icon.url)
+        
+        for i in leaderboard:
+            member = ctx.guild.get_member(int(i[0]))
+
+            embed.add_field(
+                name = member.name,
+                value = f"```Total: {i[1] + i[2]}\nWallet: {i[1]}\nBank: {i[2]}```",
+                inline = False
+            )
+
+        await ctx.reply(embed = embed)
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))

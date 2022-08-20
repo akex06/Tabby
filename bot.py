@@ -25,6 +25,7 @@ class Bot(commands.Bot):
 
     async def setup_hook(self) -> None:
         await self.load_extension("cogs.economy")
+        await self.load_extension("cogs.levels")
         await self.tree.sync()
 
     async def on_command_error(self, ctx, error) -> None:

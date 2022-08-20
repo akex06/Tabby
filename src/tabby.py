@@ -68,3 +68,9 @@ class Tabby:
 
         c.execute("UPDATE currency SET icon = %s WHERE guild = %s", (icon, guild.id))
         conn.commit()
+
+    async def get_leaderboard(self, guild: discord.Guild, max = 10) -> list:
+        c.execute("SELECT id, wallet, bank FROM economy WHERE guild = %s ORDER BY wallet + bank DESC", (guild.id, ))
+        result = c.fetchall()
+
+        return result
