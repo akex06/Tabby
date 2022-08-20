@@ -89,10 +89,7 @@ class Economy(commands.Cog):
 
         await tabby.add_money(interaction.user, (-amount, amount))
 
-        await interaction.response.send_message(
-            f"You've deposited `{amount}$`",
-            ephemeral = True
-        )
+        await interaction.response.send_message(f"You've deposited `{amount}$`")
 
     @app_commands.command(
         name = "withdraw",
@@ -114,17 +111,14 @@ class Economy(commands.Cog):
         balance = await tabby.get_bal(interaction.user)
         if amount > int(balance[0]):
             await interaction.response.send_message(
-                "The amount to deposit can't be bigger than your bank balance",
+                "The amount to withdraw can't be bigger than your bank balance",
                 ephemeral = True
             )
             return
 
         await tabby.add_money(interaction.user, (amount, -amount))
 
-        await interaction.response.send_message(
-            f"You've withdrawed `{amount}$`",
-            ephemeral = True
-        )
+        await interaction.response.send_message(f"You've withdrawed `{amount}$`")
 
 
     @app_commands.command(
@@ -213,10 +207,7 @@ class Economy(commands.Cog):
             for member in role.members:
                 await tabby.add_money(member, (0, amount))
 
-            await interaction.response.send_message(
-                f"Total amount given {len(role.members) * amount}",
-                ephemeral = True
-            )
+            await interaction.response.send_message(f"Total amount given {len(role.members) * amount}")
 
     @app_commands.command(
         name = "removemoneyrole",
@@ -252,10 +243,7 @@ class Economy(commands.Cog):
             for member in role.members:
                 await tabby.add_money(member, (0, -amount))
 
-            await interaction.response.send_message(
-                f"Total amount removed {len(role.members) * amount}",
-                ephemeral = True
-            )
+            await interaction.response.send_message(f"Total amount removed {len(role.members) * amount}")
 
     @app_commands.command(
         name = "reset-economy",
@@ -326,9 +314,7 @@ class Economy(commands.Cog):
         await tabby.add_money(member, (0, amount))
         await tabby.add_money(interaction.user, (0. -amount))
 
-        await interaction.response.send_message(
-            f"You gave {member} `{amount}`$"
-        )
+        await interaction.response.send_message(f"You gave {member} `{amount}`$")
         
 
 
