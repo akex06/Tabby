@@ -1,10 +1,32 @@
 import discord
 
-from discord import app_commands, ui
+from discord import app_commands
 from discord.ext import commands
 from src.tabby import Tabby
 
 tabby = Tabby()
+
+class Reset(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.value = None
+
+    @discord.ui.button(
+        label = "Reset economy",
+        style = discord.ButtonStyle.danger,
+        emoji = "⛔"
+    )
+    async def menu1(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ) -> None:
+
+        await tabby.reset(interaction.guild)
+        await interaction.response.send_message(
+            "The economy of the server has been reset",
+            ephemeral = True
+        )
 
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -170,7 +192,7 @@ class Economy(commands.Cog):
                 f"Total amount given {len(role.members) * amount}",
                 ephemeral = True
             )
-            
+
     @app_commands.command(
         name = "removemoneyrole",
         description = "Remove money from all members in a role"
@@ -207,6 +229,26 @@ class Economy(commands.Cog):
 
             await interaction.response.send_message(
                 f"Total amount removed {len(role.members) * amount}",
+                ephemeral = True
+            )
+
+    @app_commands.command(
+        name = "reset-economy",
+        description = "Reset the server's economy"
+    )
+    async def reset_economy(
+        self,
+        interaction: discord.Interaction
+    ) -> None:
+        if tabby.isadmin(interaction.user):
+            view = Reset()
+
+            embed = discord.Embed(title = "Economy reset", description = "Are you sure you want to reset the economy?", color = tabby.hexcolor)
+            embed.set_author(name = "Economy reset", icon_url = self.bot.user.avatar.url)
+            
+            await interaction.response.send_message(
+                view = view,
+                embed = embed,
                 ephemeral = True
             )
 
