@@ -37,17 +37,6 @@ class Tabby:
         
         return await self.get_bal(member)
 
-    async def isadmin(self, interaction: discord.Interaction) -> bool:
-        permission = interaction.user.guild_permissions.administrator
-
-        if permission:
-            return permission
-
-        await interaction.response.send_message(
-            "You don't have permissions for using this command",
-            ephemeral = True
-        )
-
     async def reset(self, guild: discord.Guild) -> None:
         c.execute("DELETE FROM economy WHERE guild = %s", (guild.id, ))
         conn.commit()

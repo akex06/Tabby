@@ -32,24 +32,25 @@ class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(
+    @commands.hybrid_command(
         name = "bal",
         description = "Check's an user balance"
     )
     @commands.guild_only()
     async def balance(
         self,
-        interaction: discord.Interaction,
+        ctx: commands.Context,
         member: discord.Member = None
     ) -> None:
         if not member:
-            member = interaction.user
+            member = ctx.author
         
         elif member.bot:
-            await interaction.response.send_message(
+            await ctx.reply(
                 "You can't use this command on a bot",
                 ephemeral = True
             )
+            return
                 
 
         wallet, bank = await tabby.get_bal(member)
@@ -60,263 +61,296 @@ class Economy(commands.Cog):
         embed.add_field(name = "Wallet", value = wallet)
         embed.add_field(name = "Bank", value = bank)
 
-        await interaction.response.send_message(embed = embed)
+        await ctx.reply(embed = embed)
 
-    @app_commands.command(
+    @commands.hybrid_command(
         name = "deposit",
-        description = "Deposit money into your bank"
+        description = "Deposit money into your bank",
+        with_app_command = True
     )
     @commands.guild_only()
     async def deposit(
         self,
-        interaction: discord.Interaction,
+        ctx: commands.Context,
         amount: int = None
     ) -> None:
         if not amount or amount <= 0:
-            await interaction.response.send_message(
+            await ctx.reply(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
             )
             return
 
-        balance = await tabby.get_bal(interaction.user)
+        balance = await tabby.get_bal(ctx.author)
         if amount > int(balance[0]):
-            await interaction.response.send_message(
+            await ctx.reply(
                 "The amount to deposit can't be bigger than your wallet balance",
                 ephemeral = True
             )
             return
 
-        await tabby.add_money(interaction.user, (-amount, amount))
+        await tabby.add_money(ctx.author, (-amount, amount))
 
-        await interaction.response.send_message(f"You've deposited `{amount}$`")
+        await ctx.reply(f"You've deposited `{amount}$`")
 
-    @app_commands.command(
+    @commands.hybrid_command(
         name = "withdraw",
-        description = "Withdraw money from your bank"
+        description = "Withdraw money from your bank",
+        with_app_command = True
     )
     @commands.guild_only()
     async def withdraw(
         self,
-        interaction: discord.Interaction,
+        ctx: commands.Context,
         amount: int = None
     ) -> None:
         if not amount or amount <= 0:
-            await interaction.response.send_message(
+            await ctx.reply(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
             )
             return
 
-        balance = await tabby.get_bal(interaction.user)
+        balance = await tabby.get_bal(ctx.author)
         if amount > int(balance[0]):
-            await interaction.response.send_message(
+            await ctx.reply(
                 "The amount to withdraw can't be bigger than your bank balance",
                 ephemeral = True
             )
             return
 
-        await tabby.add_money(interaction.user, (amount, -amount))
+        await tabby.add_money(ctx.author, (amount, -amount))
 
-        await interaction.response.send_message(f"You've withdrawed `{amount}$`")
+        await ctx.reply(f"You've withdrawed `{amount}$`")
 
 
-    @app_commands.command(
+    @commands.hybrid_command(
         name = "addmoney",
-        description = "Add money to a member"
+        description = "Add money to a member",
+        with_app_command = True
     )
     async def addmoney(
         self,
-        interaction: discord.Interaction,
-        member: discord.Member = None,
-        action: str = None,
-        amount: int = None
-    ) -> None:
-        if await tabby.isadmin(interaction):
-            if member.bot:
-                await interaction.response.send_message(
-                    "You can't use this command on a bot",
-                    ephemeral = True
-                )
-                
-            if not amount or amount <= 0:
-                await interaction.response.send_message(
-                    "The amount needs to be greater or equal to 0",
-                    ephemeral = True
-                )
-                return
-            if not action or action.lower() not in ("add", "remove"):
-                await interaction.response.send_message(
-                    "You need to specify an action (add / remove).",
-                    ephemeral = True
-                )
-                return
-
-            if not member:
-                member = interaction.user
-
-            if action == "add":
-                
-                await tabby.add_money(member, (0, amount))
-                
-                await interaction.response.send_message(
-                    f"You've added `{amount}` to {member}'s balance",
-                    ephemeral = True
-                )
-            
-            else:
-                await tabby.add_money(member, (0, -amount))
-
-                await interaction.response.send_message(
-                    f"You've removed `{amount}` from {member}'s balance",
-                    ephemeral = True
-                )
-
-    @app_commands.command(
-        name = "addmoneyrole",
-        description = "Add money to all members in a role"
-    )
-    async def addmoneyrole(
-        self,
-        interaction: discord.Interaction,
-        role: discord.Role = None,
-        amount: int = None
-    ) -> None:
-        if await tabby.isadmin(interaction):
-            if amount <= 0:
-                await interaction.response.send_message(
-                    "The amount to give needs to be equal or greater than 1",
-                    ephemeral = True
-                )
-                return
-
-            if not role:
-                await interaction.response.send_message(
-                    "You need to specify a role",
-                    ephemeral = True
-                )
-                return
-            
-            if not amount:
-                await interaction.response.send_message(
-                    "You need to specify an amount to give",
-                    ephemeral = True
-                )
-                return
-
-            for member in role.members:
-                await tabby.add_money(member, (0, amount))
-
-            await interaction.response.send_message(f"Total amount given {len(role.members) * amount}")
-
-    @app_commands.command(
-        name = "removemoneyrole",
-        description = "Remove money from all members in a role"
-    )
-    async def removemoneyrole(
-        self,
-        interaction: discord.Interaction,
-        role: discord.Role = None,
-        amount: int = None
-    ) -> None:
-        if await tabby.isadmin(interaction):
-            if amount <= 0:
-                await interaction.response.send_message(
-                    "The amount to give needs to be equal or greater than 1",
-                    ephemeral = True
-                )
-                return
-            if not role:
-                await interaction.response.send_message(
-                    "You need to specify a role",
-                    ephemeral = True
-                )
-                return
-            
-            if not amount:
-                await interaction.response.send_message(
-                    "You need to specify an amount to give",
-                    ephemeral = True
-                )
-                return
-
-            for member in role.members:
-                await tabby.add_money(member, (0, -amount))
-
-            await interaction.response.send_message(f"Total amount removed {len(role.members) * amount}")
-
-    @app_commands.command(
-        name = "reset-economy",
-        description = "Reset the server's economy"
-    )
-    async def reset_economy(
-        self,
-        interaction: discord.Interaction
-    ) -> None:
-        if tabby.isadmin(interaction.user):
-            view = Reset()
-
-            embed = discord.Embed(description = "Are you sure you want to reset the economy?", color = tabby.hexcolor)
-            embed.set_author(name = "Economy reset", icon_url = self.bot.user.avatar.url)
-            
-            await interaction.response.send_message(
-                view = view,
-                embed = embed,
-                ephemeral = True
-            )
-
-    @app_commands.command(
-        name = "give",
-        description = "Give money to other members"
-    )
-    async def give(
-        self,
-        interaction: discord.Interaction,
+        ctx: commands.Context,
         member: discord.Member = None,
         amount: int = None
     ) -> None:
         if not member:
-            await interaction.response.send_message(
+            member = ctx.author
+        
+        elif member.bot:
+            await ctx.reply(
+                "You can't use this command on a bot",
+                ephemeral = True
+            )
+            
+        if not amount or amount <= 0:
+            await ctx.reply(
+                "The amount needs to be greater or equal to 0",
+                ephemeral = True
+            )
+            return
+        
+        await tabby.add_money(member, (0, amount))
+        
+        await ctx.reply(
+            f"You've added `{amount}` to {member}'s balance",
+            ephemeral = True
+        )
+
+    @commands.hybrid_command(
+        name = "removemoney",
+        description = "Add money to a member",
+        with_app_command = True
+    )
+    async def removemoney(
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None,
+        amount: int = None
+    ) -> None:
+        if not member:
+            member = ctx.author
+
+        elif member.bot:
+            await ctx.reply(
+                "You can't use this command on a bot",
+                ephemeral = True
+            )
+            
+        if not amount or amount <= 0:
+            await ctx.reply(
+                "The amount needs to be greater or equal to 0",
+                ephemeral = True
+            )
+            return
+
+        await tabby.add_money(member, (0, -amount))
+
+        await ctx.reply(
+            f"You've removed `{amount}` from {member}'s balance",
+            ephemeral = True
+        )
+
+    @commands.hybrid_command(
+        name = "addmoneyrole",
+        description = "Add money to all members in a role",
+        with_app_command = True
+    )
+    async def addmoneyrole(
+        self,
+        ctx: commands.Context,
+        role: discord.Role = None,
+        amount: int = None
+    ) -> None:
+        if amount <= 0:
+            await ctx.reply(
+                "The amount to give needs to be equal or greater than 1",
+                ephemeral = True
+            )
+            return
+
+        if not role:
+            await ctx.reply(
+                "You need to specify a role",
+                ephemeral = True
+            )
+            return
+        
+        if not amount:
+            await ctx.reply(
+                "You need to specify an amount to give",
+                ephemeral = True
+            )
+            return
+
+        for member in role.members:
+            if not member.bot:
+                await tabby.add_money(member, (0, amount))
+
+        await ctx.reply(f"Total amount given {len(role.members) * amount}")
+
+    @commands.hybrid_command(
+        name = "removemoneyrole",
+        description = "Remove money from all members in a role",
+        with_app_command = True
+    )
+    async def removemoneyrole(
+        self,
+        ctx: commands.Context,
+        role: discord.Role = None,
+        amount: int = None
+    ) -> None:
+        if amount <= 0:
+            await ctx.reply(
+                "The amount to give needs to be equal or greater than 1",
+                ephemeral = True
+            )
+            return
+        if not role:
+            await ctx.reply(
+                "You need to specify a role",
+                ephemeral = True
+            )
+            return
+        
+        if not amount:
+            await ctx.reply(
+                "You need to specify an amount to give",
+                ephemeral = True
+            )
+            return
+
+        for member in role.members:
+            if not member.bot:
+                await tabby.add_money(member, (0, -amount))
+
+        await ctx.reply(f"Total amount removed {len(role.members) * amount}")
+
+    @commands.hybrid_command(
+        name = "reset-economy",
+        description = "Reset the server's economy",
+        with_app_command = True
+    )
+    async def reset_economy(
+        self,
+        ctx: commands.Context
+    ) -> None:
+        view = Reset()
+
+        embed = discord .Embed(description = "Are you sure you want to reset the economy?", color = tabby.hexcolor)
+        embed.set_author(name = "Economy reset", icon_url = self.bot.user.avatar.url)
+        
+        await ctx.reply(
+            view = view,
+            embed = embed,
+            ephemeral = True
+        )
+
+    @commands.hybrid_command(
+        name = "give",
+        description = "Give money to other members",
+        with_app_command = True
+    )
+    async def give(
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None,
+        amount: int = None
+    ) -> None:
+        if not member:
+            await ctx.reply(
                 "You need to specify a member",
                 ephemeral = True
             )
             return
 
         if member.bot:
-            await interaction.response.send_message(
+            await ctx.reply(
                 "You can't use this command on a bot",
                 ephemeral = True
             )
             return
 
-        if member == interaction.user:
-            await interaction.response.send_message(
+        if member == ctx.author:
+            await ctx.reply(
                 "You can't give money to yourself",
                 ephemeral = True
             )
 
         if not amount or amount <= 0:
-            await interaction.response.send_message(
+            await ctx.reply(
                 "You need to specify an amount equal or higher than 1",
                 ephemeral = True
             )
             return
 
-        balance = await tabby.get_bal(interaction.user)
+        balance = await tabby.get_bal(ctx.author)
 
-        if amount > balance[1]:
-            await interaction.response.send_message(
+        if amount > int(balance[1]):
+            await ctx.reply(
                 "You don't have enough money in your bank",
                 ephemeral = True
             )
             return
 
         await tabby.add_money(member, (0, amount))
-        await tabby.add_money(interaction.user, (0. -amount))
+        await tabby.add_money(ctx.author, (0, -amount))
 
-        await interaction.response.send_message(f"You gave {member} `{amount}`$")
+        await ctx.reply(f"You gave {member} `{amount}`$")
         
-
+    @commands.hybrid_command(
+        name = "reset-bal",
+        with_app_command = True,
+        description = "Reset the balance of a member"
+    )
+    @commands.has_permissions(administrator = True)
+    async def reset_bal(
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None
+    ) -> None:
+        await ctx.send("test")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))

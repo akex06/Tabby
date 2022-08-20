@@ -4,7 +4,7 @@
 import discord
 
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, errors
 
 from src.constants import (
     TOKEN,
@@ -27,6 +27,11 @@ class Bot(commands.Bot):
         await self.load_extension("cogs.economy")
         await self.tree.sync()
 
+    async def on_command_error(self, ctx, error) -> None:
+        await ctx.reply(
+            error,
+            ephemeral = True
+        )
 
 bot = Bot()
 bot.run(TOKEN)
