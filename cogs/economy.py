@@ -13,7 +13,6 @@ tabby = Tabby()
 class Reset(discord.ui.View):
     def __init__(self):
         super().__init__()
-        self.value = None
 
     @discord.ui.button(
         label = "Reset economy",
@@ -76,9 +75,9 @@ class Economy(commands.Cog):
     async def deposit(
         self,
         ctx: commands.Context,
-        amount: int = None
+        amount: int
     ) -> None:
-        if not amount or amount <= 0:
+        if amount <= 0:
             await ctx.reply(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
@@ -106,9 +105,9 @@ class Economy(commands.Cog):
     async def withdraw(
         self,
         ctx: commands.Context,
-        amount: int = None
+        amount: int
     ) -> None:
-        if not amount or amount <= 0:
+        if amount <= 0:
             await ctx.reply(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
@@ -138,19 +137,17 @@ class Economy(commands.Cog):
     async def addmoney(
         self,
         ctx: commands.Context,
-        member: discord.Member = None,
-        amount: int = None
+        member: discord.Member,
+        amount: int
     ) -> None:
-        if not member:
-            member = ctx.author
         
-        elif member.bot:
+        if member.bot:
             await ctx.reply(
                 "You can't use this command on a bot",
                 ephemeral = True
             )
             
-        if not amount or amount <= 0:
+        if amount <= 0:
             await ctx.reply(
                 "The amount needs to be greater or equal to 0",
                 ephemeral = True
@@ -174,19 +171,16 @@ class Economy(commands.Cog):
     async def removemoney(
         self,
         ctx: commands.Context,
-        member: discord.Member = None,
-        amount: int = None
+        member: discord.Member,
+        amount: int
     ) -> None:
-        if not member:
-            member = ctx.author
-
-        elif member.bot:
+        if member.bot:
             await ctx.reply(
                 "You can't use this command on a bot",
                 ephemeral = True
             )
             
-        if not amount or amount <= 0:
+        if amount <= 0:
             await ctx.reply(
                 "The amount needs to be greater or equal to 0",
                 ephemeral = True
@@ -210,26 +204,12 @@ class Economy(commands.Cog):
     async def addmoneyrole(
         self,
         ctx: commands.Context,
-        role: discord.Role = None,
-        amount: int = None
+        role: discord.Role,
+        amount: int
     ) -> None:
         if amount <= 0:
             await ctx.reply(
                 "The amount to give needs to be equal or greater than 1",
-                ephemeral = True
-            )
-            return
-
-        if not role:
-            await ctx.reply(
-                "You need to specify a role",
-                ephemeral = True
-            )
-            return
-        
-        if not amount:
-            await ctx.reply(
-                "You need to specify an amount to give",
                 ephemeral = True
             )
             return
@@ -250,25 +230,12 @@ class Economy(commands.Cog):
     async def removemoneyrole(
         self,
         ctx: commands.Context,
-        role: discord.Role = None,
-        amount: int = None
+        role: discord.Role,
+        amount: int
     ) -> None:
         if amount <= 0:
             await ctx.reply(
                 "The amount to give needs to be equal or greater than 1",
-                ephemeral = True
-            )
-            return
-        if not role:
-            await ctx.reply(
-                "You need to specify a role",
-                ephemeral = True
-            )
-            return
-        
-        if not amount:
-            await ctx.reply(
-                "You need to specify an amount to give",
                 ephemeral = True
             )
             return
@@ -310,16 +277,9 @@ class Economy(commands.Cog):
     async def give(
         self,
         ctx: commands.Context,
-        member: discord.Member = None,
-        amount: int = None
+        member: discord.Member,
+        amount: int
     ) -> None:
-        if not member:
-            await ctx.reply(
-                "You need to specify a member",
-                ephemeral = True
-            )
-            return
-
         if member.bot:
             await ctx.reply(
                 "You can't use this command on a bot",
@@ -327,13 +287,13 @@ class Economy(commands.Cog):
             )
             return
 
-        if member == ctx.author:
+        elif member == ctx.author:
             await ctx.reply(
                 "You can't give money to yourself",
                 ephemeral = True
             )
 
-        if not amount or amount <= 0:
+        elif amount <= 0:
             await ctx.reply(
                 "You need to specify an amount equal or higher than 1",
                 ephemeral = True
@@ -364,11 +324,8 @@ class Economy(commands.Cog):
     async def reset_bal(
         self,
         ctx: commands.Context,
-        member: discord.Member = None
+        member: discord.Member
     ) -> None:
-        if not member:
-            member = ctx.author
-
         wallet, bank = await tabby.get_bal(member)
         await tabby.reset_bal(member)
 
@@ -415,7 +372,7 @@ class Economy(commands.Cog):
         self,
         ctx: commands.Context
     ) -> None:
-        leaderboard = await tabby.get_leaderboard(ctx.guild)
+        leaderboard = await tabby.get_economy_leaderboard(ctx.guild)
 
         embed = discord.Embed(description = f"Top 10 economy leaderboard in the server, check the whole leaderboard [here](https://tabbybot.xyz/leaderboard/economy/{ctx.guild.id}))", color = HEXCOLOR)
         embed.set_author(name = f"{ctx.guild.name} economy leaderboard", icon_url = ctx.guild.icon.url)

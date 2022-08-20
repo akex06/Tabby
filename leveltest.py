@@ -1,5 +1,3 @@
-level = 0
-exp = 100
-
-needed_exp = 5 * (level ** 2) + (50 * level) + 100 - exp
-print((exp, needed_exp))
+n = 5
+l = [':blue_square:' for x in range(n)] + [':black_large_square:' for x in range(10 - n)]
+print(l)

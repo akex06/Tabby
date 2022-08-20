@@ -67,8 +67,8 @@ class Tabby:
         c.execute("UPDATE currency SET icon = %s WHERE guild = %s", (icon, guild.id))
         conn.commit()
 
-    async def get_leaderboard(self, guild: discord.Guild, max = 10) -> list:
-        c.execute("SELECT id, wallet, bank FROM economy WHERE guild = %s ORDER BY wallet + bank DESC", (guild.id, ))
+    async def get_economy_leaderboard(self, guild: discord.Guild, max = 10) -> list:
+        c.execute("SELECT id, wallet, bank FROM economy WHERE guild = %s ORDER BY wallet + bank DESC LIMIT %s", (guild.id, max))
         result = c.fetchall()
 
         return result
@@ -101,3 +101,8 @@ class Tabby:
         conn.commit()
 
         return False
+
+    async def get_level_leaderboard(self, guild: discord.Guild, max = 10):
+        c.execute("SELECT id, level, exp FROM levels WHERE guild = %s ORDER BY level DESC LIMIT %s", (guild.id, max))
+        result = c.fetchall()
+        return result
