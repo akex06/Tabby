@@ -44,6 +44,13 @@ class Economy(commands.Cog):
     ) -> None:
         if not member:
             member = interaction.user
+        
+        elif member.bot:
+            await interaction.response.send_message(
+                "You can't use this command on a bot",
+                ephemeral = True
+            )
+                
 
         wallet, bank = await tabby.get_bal(member)
 
@@ -80,9 +87,12 @@ class Economy(commands.Cog):
             )
             return
 
-        balance = await tabby.add_money(interaction.user, (amount, -amount))
+        await tabby.add_money(interaction.user, (-amount, amount))
 
-        await interaction.response.send_message("")
+        await interaction.response.send_message(
+            f"You've deposited `{amount}$`",
+            ephemeral = True
+        )
 
     @app_commands.command(
         name = "withdraw",
@@ -95,18 +105,27 @@ class Economy(commands.Cog):
         amount: int = None
     ) -> None:
         if not amount or amount <= 0:
-            interaction.response.send_message(
+            await interaction.response.send_message(
                 "You need to specify an amount equal or greater than 1",
                 ephemeral = True
             )
             return
-        
-        bank = tabby.get_bal(interaction.user)[1]
-        if amount > bank:
+
+        balance = await tabby.get_bal(interaction.user)
+        if amount > int(balance[0]):
             await interaction.response.send_message(
-                "The amount to withdraw can't be bigger than your bank balance"
+                "The amount to deposit can't be bigger than your bank balance",
+                ephemeral = True
             )
             return
+
+        await tabby.add_money(interaction.user, (amount, -amount))
+
+        await interaction.response.send_message(
+            f"You've withdrawed `{amount}$`",
+            ephemeral = True
+        )
+
 
     @app_commands.command(
         name = "addmoney",
@@ -120,6 +139,12 @@ class Economy(commands.Cog):
         amount: int = None
     ) -> None:
         if await tabby.isadmin(interaction):
+            if member.bot:
+                await interaction.response.send_message(
+                    "You can't use this command on a bot",
+                    ephemeral = True
+                )
+                
             if not amount or amount <= 0:
                 await interaction.response.send_message(
                     "The amount needs to be greater or equal to 0",
@@ -251,6 +276,61 @@ class Economy(commands.Cog):
                 embed = embed,
                 ephemeral = True
             )
+
+    @app_commands.command(
+        name = "give",
+        description = "Give money to other members"
+    )
+    async def give(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member = None,
+        amount: int = None
+    ) -> None:
+        if not member:
+            await interaction.response.send_message(
+                "You need to specify a member",
+                ephemeral = True
+            )
+            return
+
+        if member.bot:
+            await interaction.response.send_message(
+                "You can't use this command on a bot",
+                ephemeral = True
+            )
+            return
+
+        if member == interaction.user:
+            await interaction.response.send_message(
+                "You can't give money to yourself",
+                ephemeral = True
+            )
+
+        if not amount or amount <= 0:
+            await interaction.response.send_message(
+                "You need to specify an amount equal or higher than 1",
+                ephemeral = True
+            )
+            return
+
+        balance = await tabby.get_bal(interaction.user)
+
+        if amount > balance[1]:
+            await interaction.response.send_message(
+                "You don't have enough money in your bank",
+                ephemeral = True
+            )
+            return
+
+        await tabby.add_money(member, (0, amount))
+        await tabby.add_money(interaction.user, (0. -amount))
+
+        await interaction.response.send_message(
+            f"You gave {member} `{amount}`$"
+        )
+        
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))
