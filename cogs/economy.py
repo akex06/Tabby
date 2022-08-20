@@ -1,6 +1,7 @@
 import discord
 
 from discord.ext import commands
+from discord.ui import View, Button
 from src.tabby import Tabby
 
 from src.constants import (
@@ -386,7 +387,11 @@ class Economy(commands.Cog):
                 inline = False
             )
 
-        await ctx.reply(embed = embed)
+        button = Button(label = "See full leaderboard", emoji = "🔗", url = f"https://tabbybot.xyz/leaderboard/economy/{ctx.guild.id}")
+        view = View()
+        view.add_item(button)
+
+        await ctx.reply(view = view, embed = embed)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))

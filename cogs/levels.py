@@ -75,7 +75,7 @@ class Levels(commands.Cog):
                 inline = False
             )
 
-        button = Button(label = "See full levels", emoji = "🔗", url = f"https://tabbybot.xyz/leaderboard/levels/{ctx.guild.id}")
+        button = Button(label = "See full leaderboard", emoji = "🔗", url = f"https://tabbybot.xyz/leaderboard/levels/{ctx.guild.id}")
         view = View()
         view.add_item(button)
 
