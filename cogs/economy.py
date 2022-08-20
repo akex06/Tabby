@@ -4,6 +4,10 @@ from discord import app_commands
 from discord.ext import commands
 from src.tabby import Tabby
 
+from src.constants import (
+    MAX_ICON_LENGTH
+)
+
 tabby = Tabby()
 
 class Reset(discord.ui.View):
@@ -22,7 +26,7 @@ class Reset(discord.ui.View):
         button: discord.ui.Button
     ) -> None:
 
-        await tabby.reset(interaction.guild)
+        await tabby.reset_economy(interaction.guild)
         await interaction.response.send_message(
             "The economy of the server has been reset",
             ephemeral = True
@@ -129,6 +133,8 @@ class Economy(commands.Cog):
         description = "Add money to a member",
         with_app_command = True
     )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def addmoney(
         self,
         ctx: commands.Context,
@@ -163,6 +169,8 @@ class Economy(commands.Cog):
         description = "Add money to a member",
         with_app_command = True
     )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def removemoney(
         self,
         ctx: commands.Context,
@@ -197,6 +205,8 @@ class Economy(commands.Cog):
         description = "Add money to all members in a role",
         with_app_command = True
     )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def addmoneyrole(
         self,
         ctx: commands.Context,
@@ -235,6 +245,8 @@ class Economy(commands.Cog):
         description = "Remove money from all members in a role",
         with_app_command = True
     )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def removemoneyrole(
         self,
         ctx: commands.Context,
@@ -272,6 +284,8 @@ class Economy(commands.Cog):
         description = "Reset the server's economy",
         with_app_command = True
     )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def reset_economy(
         self,
         ctx: commands.Context
@@ -292,6 +306,7 @@ class Economy(commands.Cog):
         description = "Give money to other members",
         with_app_command = True
     )
+    @commands.guild_only()
     async def give(
         self,
         ctx: commands.Context,
@@ -344,13 +359,51 @@ class Economy(commands.Cog):
         with_app_command = True,
         description = "Reset the balance of a member"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def reset_bal(
         self,
         ctx: commands.Context,
         member: discord.Member = None
     ) -> None:
-        await ctx.send("test")
+        if not member:
+            member = ctx.author
+
+        wallet, bank = await tabby.get_bal(member)
+        await tabby.reset_bal(member)
+
+        await ctx.reply(
+            f"Old Balance `Wallet: {wallet}` `Bank: {bank}` >>> New Balance `Wallet: 100` `Bank: 0`",
+            ephemeral = True
+        )
+
+    @commands.hybrid_command(
+        name = "set-currency",
+        description = "Set the currency icon",
+        with_app_command = True
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def set_currency(
+        self,
+        ctx: commands.Context,
+        icon: str = None
+    ) -> None:
+        if not icon:
+            icon = await tabby.get_icon(ctx.guild)
+
+            await ctx.reply(f"The server's currency icon is `{icon}`")
+            return
+
+        if len(icon) > MAX_ICON_LENGTH:
+            await ctx.reply(
+                f"The length of the icon can't be bigger than {MAX_ICON_LENGTH}",
+                ephemeral = True
+            )
+            return
+
+        await tabby.set_icon(ctx.guild, icon)
+        await ctx.reply(f"The new currency icon is `{icon}`")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))
