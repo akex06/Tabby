@@ -1,3 +1,6 @@
+#   BOT MADE BY AKEX06
+#   https://github.com/akex06 <3
+
 import discord
 
 from discord.ext import commands
