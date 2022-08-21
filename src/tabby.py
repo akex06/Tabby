@@ -6,14 +6,19 @@ from random import randint
 from mysql.connector.connection import MySQLConnection
 
 from src.constants import (
-    DEFAULT_ICON
+    DATABASE,
+    DEFAULT_ICON,
+    DEFAULT_PREFIX,
+    HOST,
+    PASSWORD,
+    USER
 )
 
 conn: MySQLConnection = mysql.connector.connect(
-    host="panel.f4ke.ml",
-    user="u4_6D7b3sikkH",
-    password="Yex8xXK@JXih.KfGdyPpKE^N",
-    database="s4_tabby"
+    host=HOST,
+    user=USER,
+    password=PASSWORD,
+    database=DATABASE
 )
 c = conn.cursor(buffered=True)
 
@@ -106,3 +111,20 @@ class Tabby:
         c.execute("SELECT id, level, exp FROM levels WHERE guild = %s ORDER BY level DESC LIMIT %s", (guild.id, max))
         result = c.fetchall()
         return result
+
+    async def get_prefix(self, guild: discord.Guild):
+        c.execute("SELECT prefix FROM prefixes WHERE guild = %s", (guild.id, ))
+        result = c.fetchone()
+        if not result:
+            c.execute("INSERT INTO prefixes (guild, prefix) VALUES (%s, %s)", (guild.id, DEFAULT_PREFIX))
+            conn.commit()
+
+            return DEFAULT_PREFIX
+
+        return c.fetchone()
+
+    async def set_prefix(self, guild: discord.Guild, prefix: str):
+        await self.get_prefix(guild)
+
+        c.execute("UPDATE prefixes SET prefix = %s WHERE guild = %s", (prefix, guild.id))
+        conn.commit()
