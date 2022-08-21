@@ -27,6 +27,7 @@ class Bot(commands.Bot):
         await self.load_extension("cogs.economy")
         await self.load_extension("cogs.levels")
         await self.load_extension("cogs.general")
+        
         await self.tree.sync()
 
     async def on_command_error(self, ctx, error) -> None:

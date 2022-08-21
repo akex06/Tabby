@@ -13,12 +13,16 @@ tabby = Tabby()
 class Levels(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.cdmapping = commands.CooldownMapping.from_cooldown(1, 60, commands.BucketType.user)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if not message.author.bot:
-            member = message.author
-            await tabby.add_exp(member)
+            bucket = self.cdmapping.get_bucket(message)
+            retry_after = bucket.update_rate_limit()
+            if not retry_after:
+                member = message.author
+                await tabby.add_exp(member)
             
 
     @commands.hybrid_command(
