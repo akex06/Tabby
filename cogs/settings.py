@@ -1,6 +1,8 @@
 import discord
 
+from discord import app_commands
 from discord.ext import commands
+from typing import List
 from src.tabby import Tabby
 
 from src.constants import (
@@ -36,22 +38,6 @@ class Settings(commands.Cog):
         await ctx.reply(
             f"The prefix succesfully changed to {prefix}"
         )
-
-    @commands.hybrid_command(
-        name = "channel",
-        description = "Change settings from channels",
-        with_app_command = True
-    )
-    @commands.guild_only()
-    @commands.has_permissions(administrator = True)
-    async def channel(
-        self,
-        ctx: commands.Context,
-        action: str,
-        type: str,
-        channel: discord.TextChannel
-    ) -> None:
-        pass
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Settings(bot))

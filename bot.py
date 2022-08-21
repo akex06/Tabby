@@ -27,7 +27,8 @@ class Bot(commands.Bot):
     def __init__(self) -> None:
         super().__init__(
             command_prefix=get_prefix,
-            intents=discord.Intents.all()
+            intents=discord.Intents.all(),
+            help_command = None
         )
 
     async def on_ready(self) -> None:
@@ -42,12 +43,6 @@ class Bot(commands.Bot):
         await self.load_extension("cogs.settings")
         
         await self.tree.sync()
-
-    async def on_command_error(self, ctx, error) -> None:
-        await ctx.reply(
-            error,
-            ephemeral = True
-        )
 
 bot = Bot()
 bot.run(TOKEN)
