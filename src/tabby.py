@@ -10,10 +10,10 @@ from src.constants import (
 )
 
 conn: MySQLConnection = mysql.connector.connect(
-    host="panel.f4ke.ml",
-    user="u4_6D7b3sikkH",
-    password="Yex8xXK@JXih.KfGdyPpKE^N",
-    database="s4_tabby"
+    host="HOST",
+    user="USER",
+    password="PASSWORD",
+    database="DATABASE"
 )
 c = conn.cursor(buffered=True)
 
