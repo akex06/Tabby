@@ -111,7 +111,6 @@ class Tabby:
         c.execute("SELECT id, level, exp FROM levels WHERE guild = %s ORDER BY level DESC LIMIT %s", (guild.id, max))
         result = c.fetchall()
         return result
-<<<<<<< HEAD
 
     async def get_prefix(self, guild: discord.Guild):
         c.execute("SELECT prefix FROM prefixes WHERE guild = %s", (guild.id, ))
@@ -129,5 +128,3 @@ class Tabby:
 
         c.execute("UPDATE prefixes SET prefix = %s WHERE guild = %s", (prefix, guild.id))
         conn.commit()
-=======
->>>>>>> eac4ce921cb7b26f187eb6d2e6e9d630a7d89f3e
