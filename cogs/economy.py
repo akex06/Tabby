@@ -37,7 +37,7 @@ class Economy(commands.Cog, name = "economy"):
         self.bot = bot
 
     @commands.hybrid_command(
-        name = "bal",
+        name = "balance",
         description = "Check's an user balance"
     )
     @commands.guild_only()

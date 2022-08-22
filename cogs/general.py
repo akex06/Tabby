@@ -5,10 +5,14 @@ from discord import app_commands
 from discord.ext import commands
 from discord.ui import Button, View, Select
 from typing import List 
+from src.tabby import Tabby
 
 from src.constants import (
-    HEXCOLOR
+    HEXCOLOR,
+    LINKS
 )
+
+tabby = Tabby()
 
 class General(commands.Cog, name = "general"):
     def __init__(self, bot: commands.Bot):
@@ -65,24 +69,79 @@ class General(commands.Cog, name = "general"):
 
     @commands.hybrid_command(
         name = "help",
-        description = "Dsiplays a help menu",
+        description = "Displays a help menu",
         with_app_command = True
     )
     async def help(
         self,
         ctx: commands.Context,
         extension: str = None,
-        command: commands.Command = None
+        command: str = None
     ) -> None:
-        if not extension:
-            embed = discord.Embed(description = f"Tabby has `{len([x for x in os.listdir('./cogs')])}` categories and `{len(self.bot.commands)}` commands", color = HEXCOLOR)
+
+        select = Select(
+            min_values = 1,
+            max_values = 1,
+            placeholder = "Select an extension",
+            options = [
+                discord.SelectOption(
+                    label = cog.qualified_name.title(),
+                    description = cog.description,
+                    value = cog.qualified_name,
+                    default = False
+                ) for cog in self.bot.cogs.values()
+            ]
+        )
+
+        async def callback(interaction: discord.Interaction):
+            cog = self.bot.get_cog(select.values[0].lower())
+            commands = [command.name for command in cog.get_commands()]
+            links = []
+
+            for index, command in enumerate(commands, 1):
+                links.append(f"{command}{' '*(16 - len(command))}")
+
+                if index % 4 == 0:
+                    links.append("\n")
+
+            embed = discord.Embed(description = f"List of commands: `/help <category>`\nSpecific command help: `/help <command>`", color = HEXCOLOR)
+            embed.set_author(name = f"{select.values[0]} Command List", url = "https://tabbybot.xyz/commands", icon_url = self.bot.user.avatar.url)
+            embed.add_field(name = "Commands", value = f"```{''.join(links)}```", inline = False)
+            embed.add_field(name = "Useful Links", value = LINKS, inline = False)
+
+            await ctx.reply(embed = embed, view = view)
+        
+        select.callback = callback
+
+        view = View()
+        view.add_item(select)
+
+        if extension:
+            cog = self.bot.get_cog(extension.lower())
+            commands = [command.name for command in cog.get_commands()]
+            links = []
+
+            for index, command in enumerate(commands, 1):
+                links.append(f"{command}{' '*(16 - len(command))}")
+
+                if index % 4 == 0:
+                    links.append("\n")
+
+            embed = discord.Embed(description = f"List of commands: `/help <category>`\nSpecific command help: `/help <command>`", color = HEXCOLOR)
+            embed.set_author(name = f"{extension} Command List", url = "https://tabbybot.xyz/commands", icon_url = self.bot.user.avatar.url)
+            embed.add_field(name = "Commands", value = f"```{''.join(links)}```", inline = False)
+            embed.add_field(name = "Useful Links", value = LINKS, inline = False)
+
+            await ctx.reply(embed = embed, view = view)
+
+        elif not extension:
+            embed = discord.Embed(description = f"Tabby has `{len(self.bot.cogs)}` categories and `{len(self.bot.commands)}` commands", color = HEXCOLOR)
             embed.set_author(name = "Tabby's Help Menu", url = "https://tabbybot.xyz/commands", icon_url = self.bot.user.avatar.url)
             embed.add_field(name = "Help Commands", value = "List of commands: `/help <category>`\nSpecific command help: `/help <command>`", inline = False)
             embed.add_field(name = "Categories", value = '\n'.join([f'`/help {name}` » {name.title()}' for name, cog in self.bot.cogs.items()]), inline = False)
-
-            await ctx.reply(embed = embed)
-
+            embed.add_field(name = "Useful Links", value = LINKS)
             
+            await ctx.reply(embed = embed, view = view)
 
     @help.autocomplete("extension")
     async def extension_autocomplete(

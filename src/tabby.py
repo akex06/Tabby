@@ -2,7 +2,8 @@ import discord
 import mysql.connector
 import random
 
-from random import randint
+from discord.ext import commands
+from discord.ext.commands import Cog
 from mysql.connector.connection import MySQLConnection
 
 from src.constants import (
@@ -11,7 +12,9 @@ from src.constants import (
     DEFAULT_PREFIX,
     HOST,
     PASSWORD,
-    USER
+    USER,
+    LINKS,
+    HEXCOLOR
 )
 
 conn: MySQLConnection = mysql.connector.connect(
