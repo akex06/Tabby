@@ -4,7 +4,7 @@ import os
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Button, View, Select
-from typing import Any, List, Optional
+from typing import List 
 
 from src.constants import (
     HEXCOLOR
@@ -72,7 +72,7 @@ class General(commands.Cog, name = "general"):
         self,
         ctx: commands.Context,
         extension: str = None,
-        command: str = None
+        command: commands.Command = None
     ) -> None:
         if not extension:
             embed = discord.Embed(description = f"Tabby has `{len([x for x in os.listdir('./cogs')])}` categories and `{len(self.bot.commands)}` commands", color = HEXCOLOR)
@@ -82,8 +82,7 @@ class General(commands.Cog, name = "general"):
 
             await ctx.reply(embed = embed)
 
-        if command:
-            await self.bot.get_command(command)
+            
 
     @help.autocomplete("extension")
     async def extension_autocomplete(
