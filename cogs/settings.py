@@ -9,7 +9,7 @@ from src.constants import (
     MAX_PREFIX_LENGTH
 )
 
-class Settings(commands.Cog):
+class Settings(commands.Cog, name = "settings"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.tabby = Tabby()

@@ -10,49 +10,7 @@ from src.constants import (
     HEXCOLOR
 )
 
-class Select(discord.ui.Select):
-    def __init__(self):
-        options = [
-            discord.SelectOption(
-                label = "Economy",
-                description = "Interact with other members with the economy system",
-                value = "economy"
-            ),
-            discord.SelectOption(
-                label = "General",
-                description = "Some general commands",
-                value = "general"
-            ),
-            discord.SelectOption(
-                label = "Levels",
-                description = "Check who are the most active people in the server",
-                value = "levels"
-            ),
-            discord.SelectOption(
-                label = "Settings",
-                description = "Configure your server at it's finest",
-                value = "settings"
-            )
-        ]
-        super().__init__(
-            placeholder = "Select a category",
-            min_values = 1,
-            max_values = 1,
-            options = options
-        )
-    
-    async def callback(self, interaction: discord.Interaction) -> Any:
-        embed = discord.Embed(description = "Detailed info about a command using `/commands <command>`", color = HEXCOLOR)
-        embed.set_author(name = f"Help {self.values[0]}", icon_url = "https://cdn.discordapp.com/avatars/868470190499827762/bccea487fbde02fe8244c6ab9638bc74.webp")
-
-        await interaction.message.edit(embed = embed, view = None)
-
-class SelectView(discord.ui.View):
-    def __init__(self, *, timeout: Optional[float] = 180):
-        super().__init__(timeout=timeout)
-        self.add_item(Select())
-
-class General(commands.Cog):
+class General(commands.Cog, name = "general"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -113,17 +71,19 @@ class General(commands.Cog):
     async def help(
         self,
         ctx: commands.Context,
-        extension: str = None
+        extension: str = None,
+        command: str = None
     ) -> None:
         if not extension:
+            embed = discord.Embed(description = f"Tabby has `{len([x for x in os.listdir('./cogs')])}` categories and `{len(self.bot.commands)}` commands", color = HEXCOLOR)
+            embed.set_author(name = "Tabby's Help Menu", url = "https://tabbybot.xyz/commands", icon_url = self.bot.user.avatar.url)
+            embed.add_field(name = "Help Commands", value = "List of commands: `/help <category>`\nSpecific command help: `/help <command>`", inline = False)
+            embed.add_field(name = "Categories", value = '\n'.join([f'`/help {name}` » {name.title()}' for name, cog in self.bot.cogs.items()]), inline = False)
 
-            embed = discord.Embed(description = f"Tabby has `{len([x for x in os.listdir('./cogs') if x.endswith('.py')])}` categories and `y` commands", color = HEXCOLOR)
-            embed.set_author(name = "Tabby Commands", url="https://tabbybot.xyz/commands", icon_url=self.bot.user.avatar.url)
-            embed.add_field(name = "Help Menu", value = "Use `/commands` for a list of all commands\nUse `/commands <command>` for a specific description of a command", inline = False)
-            embed.add_field(name = "Categories", value = "`/help economy` - Economy\n`/help general` - General\n`/help levels` - Levels\n`/help Settings` - Settings", inline = False)
-            embed.add_field(name = "Links", value = "[Website](https://tabbybot.xyz/) | [Dashboard](https://tabbybot.xyz/dashboard) | [Support](https://discord.tabbybot.xyz/) | [Commands](https://tabbybot.xyz/commands)", inline = False)
+            await ctx.reply(embed = embed)
 
-            await ctx.reply(embed = embed, view = SelectView())
+        if command:
+            await self.bot.get_command(command)
 
     @help.autocomplete("extension")
     async def extension_autocomplete(
@@ -131,8 +91,17 @@ class General(commands.Cog):
         ctx: commands.Context,
         current: str
     ) -> List[app_commands.Choice[str]]:
-        extensions = ["Economy", "Levels", "Settings", "General"]
+        extensions = [x.title() for x in self.bot.cogs.keys()]
         return [app_commands.Choice(name = extension, value = extension) for extension in extensions if current.lower() in extension.lower()]
+
+    @help.autocomplete("command")
+    async def command_autocomplete(
+        self,
+        ctx: commands.Context,
+        current: str
+    ) -> List[app_commands.Choice[str]]:
+        commands = [x.name.title() for x in self.bot.commands]
+        return [app_commands.Choice(name = command, value = command) for command in commands if current.lower() in command.lower()]
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(General(bot))

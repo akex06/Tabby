@@ -32,7 +32,7 @@ class Reset(discord.ui.View):
             ephemeral = True
         )
 
-class Economy(commands.Cog):
+class Economy(commands.Cog, name = "economy"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 

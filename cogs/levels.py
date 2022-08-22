@@ -10,7 +10,7 @@ from src.constants import (
 
 tabby = Tabby()
 
-class Levels(commands.Cog):
+class Levels(commands.Cog, name = "levels"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.cdmapping = commands.CooldownMapping.from_cooldown(1, 60, commands.BucketType.user)
