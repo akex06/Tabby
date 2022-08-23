@@ -1,5 +1,5 @@
-Dashboard/
 src/__pycache__/
 cogs/__pycache__/
 test.py
 src/constants.py
+Dashboard/test.py
