@@ -41,6 +41,7 @@ class Bot(commands.Bot):
         await self.load_extension("cogs.levels")
         await self.load_extension("cogs.general")
         await self.load_extension("cogs.settings")
+        await self.load_extension("cogs.moderation")
         
         await self.tree.sync()
 
