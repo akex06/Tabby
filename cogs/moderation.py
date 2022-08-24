@@ -1,6 +1,8 @@
 import discord
 
 from discord.ext import commands
+from datetime import datetime, timedelta
+from typing import List, Optional, Union
 
 class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -17,7 +19,7 @@ class Moderation(commands.Cog):
         self,
         ctx: commands.Context,
         member: discord.Member,
-        reason: str = "A reason hasn't been set"
+        reason: Optional[str] = "A reason hasn't been set"
     ) -> None:
         await member.kick(reason = reason)
         await ctx.reply(f"{member} has been kicked")
@@ -35,7 +37,7 @@ class Moderation(commands.Cog):
         ctx: commands.Context,
         member: discord.Member,
         delete_message_days: int = 0,
-        reason: str = "A reason hasn't been set",
+        reason: Optional[str] = "A reason hasn't been set",
 
     ) -> None:
         if delete_message_days > 7:
@@ -46,6 +48,37 @@ class Moderation(commands.Cog):
 
         await member.ban(reason = reason)
         await ctx.reply(f"{member} has been banned")
+
+    @commands.hybrid_command(
+        name = "unban",
+        description = "Unbans a member from the server"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(ban_members = True)
+    async def unban(
+        self,
+        ctx: commands.Context,
+        member: discord.Member,
+        reason: Optional[str] = "A reason hasn't been set"
+    ) -> None:
+        await member.unban(reason = reason)
+        await ctx.reply(f"{member} has been unbaned")
+
+    @commands.hybrid_command(
+        name = "timeout",
+        description = "Timeout a member from the server"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(moderate_members = True)
+    async def timeout(
+        self,
+        ctx: commands.Context,
+        member: discord.Member,
+        until: Optional[Union[timedelta, datetime]],
+        reason: Optional[str] = "A reason hasn't been set"
+    ) -> None:
+        await member.timeout(until = until, reason = reason)
+        await ctx.reply(f"{member} has been kicked")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Moderation(bot))
