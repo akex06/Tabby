@@ -1,2 +1,0 @@
-TOKEN="ODY4NDcwMTkwNDk5ODI3NzYy.GzFWy0.YCE4CmsltKgv9Uc2I7yl7e3l4rVy710R-ddGus"
-SECRET = "xbUujmpoF5k0rlPtlaGfceIniylFg73i"
