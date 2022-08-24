@@ -283,3 +283,16 @@ div#features:hover {
   padding: 18px;
 }
 
+.shared {
+  height: 128px;
+  width: auto;
+  border-radius: 10px;
+}
+
+.shared-green {
+  border: 2px solid green;
+}
+
+.shared-red {
+  border: 2px solid red;
+}

@@ -1,14 +1,20 @@
 import requests
 
+from constants import (
+    TOKEN,
+    SECRET
+)
+
 class Oauth:
     client_id = "868470190499827762"
-    client_secret = "VDFz7-20-QgisLUcWjZjuLfgjTNIyk-C"
-    redirect_uri = "http://127.0.0.1:5000/login"
+    client_secret = SECRET
+    redirect_uri = "http://127.0.0.1:5000/dashboard"
     scope = "identify%20email%20guilds"
-    discord_login_url = "https://discord.com/api/oauth2/authorize?client_id=868470190499827762&redirect_uri=http%3A%2F%2F127.0.0.1%3A5000%2Flogin&response_type=code&scope=identify%20email%20guilds"
+    discord_login_url = "https://discord.com/api/oauth2/authorize?client_id=868470190499827762&redirect_uri=http%3A%2F%2F127.0.0.1%3A5000%2Fdashboard&response_type=code&scope=identify%20email%20guilds"
     discord_token_url = "https://discord.com/api/oauth2/token"
     discord_api_url = "https://discord.com/api"
-    bot_token = "ODY4NDcwMTkwNDk5ODI3NzYy.GYVwc4.olvoPGuN2YH9ifqUCE_lVN2E-o74lY6w_xuEGA"
+    invite = "https://discord.com/oauth2/authorize?client_id=868470190499827762&permissions=1102132341878&scope=bot%20applications.commands"
+    bot_token = TOKEN
 
     @staticmethod
     def get_access_token(code):
@@ -42,10 +48,13 @@ class Oauth:
 
         for guild in guilds:
             if guild["id"] in bot_guild_ids:
-                guild["shared"] = True
+                guild["shared"] = "shared-green"
+                guild["url"] = f"https://tabbybot.xyz/dashboard/{guild['id']}"
+                
 
             else:
-                guild["shared"] = False
+                guild["shared"] = "shared-red"
+                guild["url"] = f"{Oauth.invite}&guild_id={guild['id']}"
 
         return guilds
 
@@ -59,7 +68,14 @@ class Oauth:
         guilds = []
         for guild in raw_guilds:
             if guild["permissions"] & 0x8 == 8:
-                data = {"id": guild["id"], "name": guild["name"], "icon": f"https://cdn.discordapp/icons/{guild['id']}/{guild['icon']}.png"}
+                data = {"id": guild["id"], "name": guild["name"]}
+
+                if guild["icon"]:
+                    data["icon"] = f"https://cdn.discordapp.com/icons/{guild['id']}/{guild['icon']}"
+
+                else:
+                    data["icon"] = "https://external-preview.redd.it/4PE-nlL_PdMD5PrFNLnjurHQ1QKPnCvg368LTDnfM-M.png?auto=webp&s=ff4c3fbc1cce1a1856cff36b5d2a40a6d02cc1c3"
+
                 guilds.append(data)
         
         guilds = Oauth.get_guilds(guilds)

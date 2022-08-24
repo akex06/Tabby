@@ -13,9 +13,12 @@ def home():
 
     return render_template("index.html", guild_amount=guild_amount)
 
-@app.route("/dashboard")
 @app.route("/login")
-def login():
+async def login():
+    return redirect("/dashboard")
+
+@app.route("/dashboard")
+def dashboard():
     at = session.get(request.remote_addr)
     user = Oauth.get_user_json(at)
 
@@ -37,7 +40,7 @@ def login():
     name = f"{user['username']}#{user['discriminator']}"
     guilds = Oauth.get_user_guilds(at)
 
-    return render_template("dashboard.html", name = name, guilds = guilds)
+    return render_template("dashboard.html", name = name, guilds = guilds, guild_amount = Oauth.get_guild_amount())
 
 if __name__ == "__main__":
     app.run(debug = True)
